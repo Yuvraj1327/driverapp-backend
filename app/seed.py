@@ -47,11 +47,12 @@ ROLES = [
 
 EXPENSE_CATEGORIES = [
     ("Fuel", "Petrol/diesel refuelling costs"),
-    ("Toll", "Road toll charges"),
+    ("Salik", "Dubai Salik toll gate charges"),
     ("Parking", "Parking fees"),
-    ("Maintenance", "General vehicle maintenance"),
-    ("Fines", "Traffic fines and violations"),
-    ("Car Wash", "Vehicle cleaning services"),
+    ("Service", "Routine vehicle servicing (oil, filters, etc.)"),
+    ("Repair", "Vehicle repairs (brakes, tyres, bodywork, etc.)"),
+    ("Driver Allowance", "Daily/monthly allowances paid to drivers"),
+    ("Miscellaneous", "Other fleet-related expenses"),
 ]
 
 
@@ -228,8 +229,8 @@ async def seed() -> None:
         if vehicles and drivers and categories:
             sample_expenses = [
                 (vehicles[0], drivers[0], categories["Fuel"], 250.0, "Full tank refuel", ExpenseStatus.APPROVED),
-                (vehicles[0], drivers[0], categories["Toll"], 40.0, "Salik toll charges", ExpenseStatus.PENDING),
-                (vehicles[1], drivers[1], categories["Maintenance"], 600.0, "Brake pad replacement", ExpenseStatus.PENDING),
+                (vehicles[0], drivers[0], categories["Salik"], 40.0, "Salik toll charges", ExpenseStatus.PENDING),
+                (vehicles[1], drivers[1], categories["Repair"], 600.0, "Brake pad replacement", ExpenseStatus.PENDING),
                 (vehicles[1], drivers[1], categories["Parking"], 30.0, "Mall parking", ExpenseStatus.REJECTED),
             ]
             for vehicle, driver, category, amount, description, status in sample_expenses:

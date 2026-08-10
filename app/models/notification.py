@@ -19,7 +19,7 @@ class Notification(Base, UUIDMixin, TimestampMixin):
     title: Mapped[str] = mapped_column(String(150), nullable=False)
     message: Mapped[str] = mapped_column(String(500), nullable=False)
     notification_type: Mapped[NotificationType] = mapped_column(
-        Enum(NotificationType, name="notification_type"), default=NotificationType.INFO, nullable=False
+        Enum(NotificationType, name="notification_type", values_callable=lambda x: [e.value for e in x]), default=NotificationType.INFO, nullable=False
     )
     is_read: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     link: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)

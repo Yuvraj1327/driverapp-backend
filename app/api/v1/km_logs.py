@@ -10,7 +10,7 @@ from app.api.v1.deps import pagination_params
 from app.auth.dependencies import require_any_role
 from app.database.session import get_db
 from app.schemas.common import Page
-from app.schemas.km_log import KmLogCreate, KmLogRead, KmLogUpdate
+from app.schemas.km_log import KmLogCreate, KmLogRead, KmLogUpdate, KmStats
 from app.services.km_log_service import KmLogService
 
 router = APIRouter(prefix="/km-logs", tags=["KM Logs"])
@@ -80,3 +80,21 @@ async def driver_km_history(
         page_size=result.page_size,
         pages=result.pages,
     )
+
+
+@router.get(
+    "/vehicle/{vehicle_id}/stats", response_model=KmStats, dependencies=[Depends(require_any_role)],
+    summary="Today / current-month / all-time KM totals for a vehicle",
+)
+async def vehicle_km_stats(vehicle_id: uuid.UUID, db: AsyncSession = Depends(get_db)) -> KmStats:
+    service = KmLogService(db)
+    return await service.stats_for_vehicle(vehicle_id)
+
+
+@router.get(
+    "/driver/{driver_id}/stats", response_model=KmStats, dependencies=[Depends(require_any_role)],
+    summary="Today / current-month / all-time KM totals for a driver",
+)
+async def driver_km_stats(driver_id: uuid.UUID, db: AsyncSession = Depends(get_db)) -> KmStats:
+    service = KmLogService(db)
+    return await service.stats_for_driver(driver_id)

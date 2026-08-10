@@ -27,7 +27,7 @@ class Vehicle(Base, UUIDMixin, TimestampMixin):
     insurance_expiry: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
 
     status: Mapped[VehicleStatus] = mapped_column(
-        Enum(VehicleStatus, name="vehicle_status"), default=VehicleStatus.ACTIVE, nullable=False
+        Enum(VehicleStatus, name="vehicle_status", values_callable=lambda x: [e.value for e in x]), default=VehicleStatus.ACTIVE, nullable=False
     )
 
     assignments: Mapped[List["VehicleAssignment"]] = relationship(

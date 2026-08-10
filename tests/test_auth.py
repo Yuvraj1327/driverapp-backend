@@ -59,3 +59,51 @@ async def test_refresh_token_flow(client: AsyncClient, admin_user):
     )
     assert refresh_response.status_code == 200
     assert "access_token" in refresh_response.json()
+
+
+async def test_signup_creates_user_and_allows_login(client: AsyncClient, admin_user):
+    signup_response = await client.post(
+        "/api/v1/auth/signup",
+        json={
+            "full_name": "New Signup Driver",
+            "email": "signup-driver@test.com",
+            "phone": "+971500000077",
+            "password": "Signup@123",
+        },
+    )
+    assert signup_response.status_code == 201
+    body = signup_response.json()
+    assert body["email"] == "signup-driver@test.com"
+
+    login_response = await client.post(
+        "/api/v1/auth/login", json={"email": "signup-driver@test.com", "password": "Signup@123"}
+    )
+    assert login_response.status_code == 200
+    assert "access_token" in login_response.json()
+
+
+async def test_signup_duplicate_email_rejected(client: AsyncClient, admin_user):
+    payload = {
+        "full_name": "Dup User",
+        "email": "dup@test.com",
+        "password": "Signup@123",
+    }
+    first = await client.post("/api/v1/auth/signup", json=payload)
+    assert first.status_code == 201
+
+    second = await client.post("/api/v1/auth/signup", json=payload)
+    assert second.status_code == 409
+
+
+async def test_logout_revokes_refresh_token(client: AsyncClient, admin_user):
+    login_response = await client.post(
+        "/api/v1/auth/login", json={"email": "admin@test.com", "password": "Password@123"}
+    )
+    refresh_token = login_response.json()["refresh_token"]
+
+    logout_response = await client.post("/api/v1/auth/logout", json={"refresh_token": refresh_token})
+    assert logout_response.status_code == 200
+
+    # The revoked refresh token can no longer be exchanged for new tokens.
+    reuse_response = await client.post("/api/v1/auth/refresh", json={"refresh_token": refresh_token})
+    assert reuse_response.status_code == 422

@@ -59,7 +59,6 @@ def upgrade() -> None:
 
     # --- vehicles ---
     vehicle_status_enum = postgresql.ENUM("active", "in_service", "inactive", "retired", name="vehicle_status")
-    vehicle_status_enum.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "vehicles",
@@ -83,7 +82,6 @@ def upgrade() -> None:
 
     # --- vehicle_assignments ---
     assignment_status_enum = postgresql.ENUM("active", "unassigned", name="assignment_status")
-    assignment_status_enum.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "vehicle_assignments",
@@ -127,7 +125,6 @@ def upgrade() -> None:
 
     # --- expenses ---
     expense_status_enum = postgresql.ENUM("pending", "approved", "rejected", name="expense_status")
-    expense_status_enum.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "expenses",
@@ -146,7 +143,6 @@ def upgrade() -> None:
 
     # --- expense_approvals ---
     approval_decision_enum = postgresql.ENUM("pending", "approved", "rejected", name="approval_decision")
-    approval_decision_enum.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "expense_approvals",
@@ -199,9 +195,7 @@ def upgrade() -> None:
     reminder_type_enum = postgresql.ENUM(
         "insurance_expiry", "mulkiya_expiry", "service_due", "tyre_change", "custom", name="reminder_type"
     )
-    reminder_type_enum.create(op.get_bind(), checkfirst=True)
     reminder_status_enum = postgresql.ENUM("pending", "sent", "read", "dismissed", name="reminder_status")
-    reminder_status_enum.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "reminders",
@@ -219,7 +213,6 @@ def upgrade() -> None:
 
     # --- notifications ---
     notification_type_enum = postgresql.ENUM("info", "warning", "alert", "approval", name="notification_type")
-    notification_type_enum.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "notifications",
@@ -238,9 +231,7 @@ def upgrade() -> None:
     report_type_enum = postgresql.ENUM(
         "daily", "weekly", "monthly", "vehicle_wise", "driver_wise", "expense_wise", name="report_type"
     )
-    report_type_enum.create(op.get_bind(), checkfirst=True)
     export_format_enum = postgresql.ENUM("pdf", "excel", name="export_format")
-    export_format_enum.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "reports",

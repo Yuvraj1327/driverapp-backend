@@ -201,12 +201,12 @@ request/response schemas and the ability to try requests) is at **`/docs`**.
 
 | Group                | Endpoints (abridged) |
 |------------------------|----------------------|
-| Auth                   | `POST /auth/login`, `POST /auth/refresh`, `GET /auth/me` |
+| Auth                   | `POST /auth/signup`, `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout`, `GET /auth/me` |
 | Users                  | `POST/GET /users`, `GET/PUT/DELETE /users/{id}`, `POST /users/me/change-password` |
 | Drivers                | `POST/GET /drivers`, `GET/PUT/DELETE /drivers/{id}` |
 | Vehicles               | `POST/GET /vehicles`, `GET/PUT/DELETE /vehicles/{id}` |
 | Vehicle Assignments    | `POST /assignments`, `POST /assignments/{id}/unassign`, `GET /assignments` |
-| KM Logs                | `POST /km-logs`, `PUT/GET /km-logs/{id}`, `GET /km-logs/vehicle/{id}/history`, `GET /km-logs/driver/{id}/history` |
+| KM Logs                | `POST /km-logs`, `PUT/GET /km-logs/{id}`, `GET /km-logs/vehicle/{id}/history`, `GET /km-logs/driver/{id}/history`, `GET /km-logs/vehicle/{id}/stats`, `GET /km-logs/driver/{id}/stats` |
 | Expense Categories     | `POST/GET /expense-categories`, `PUT/DELETE /expense-categories/{id}` |
 | Expenses               | `POST/GET /expenses`, `GET/PUT/DELETE /expenses/{id}`, `POST /expenses/{id}/receipt`, `POST /expenses/{id}/review` |
 | Tyres                  | `POST/GET /tyres`, `GET/PUT/DELETE /tyres/{id}` |
@@ -287,6 +287,46 @@ alembic downgrade -1
   instead of the local-disk fallback.
 
 ---
+
+## Audit Changelog (this revision)
+
+This pass audited the backend end-to-end against a real PostgreSQL instance
+(not just SQLite in tests) and fixed the following real bugs/gaps:
+
+- **Fixed:** Initial Alembic migration failed on a fresh Postgres database
+  (`DuplicateObjectError` on enum types) because enum types were both
+  explicitly pre-created *and* implicitly created again by `create_table`.
+  Removed the redundant explicit creation.
+- **Fixed:** All enum-typed columns (`vehicle_status`, `expense_status`,
+  `assignment_status`, `reminder_type`, `reminder_status`, `notification_type`,
+  `report_type`, `export_format`, `approval_decision`) were binding the Python
+  enum **member name** (e.g. `"ACTIVE"`) instead of its **value** (`"active"`),
+  which is invalid against the native Postgres enum types created by the
+  migration. Added `values_callable` to every affected column. This bug was
+  invisible under the SQLite test suite (SQLite has no native enum type to
+  reject the mismatch) and only surfaced against real Postgres — now fixed
+  and verified with real inserts.
+- **Added:** `POST /auth/signup` — public self-registration, always
+  provisions a `driver`-role account, rejects duplicate emails.
+- **Added:** `POST /auth/logout` — blacklists the given refresh token via a
+  new `revoked_tokens` table, so it can no longer be exchanged for new
+  tokens (access tokens still expire naturally, per standard JWT practice).
+  `/auth/refresh` now also rotates and blacklists the token it consumes.
+- **Added:** `GET /km-logs/vehicle/{id}/stats` and `/km-logs/driver/{id}/stats`
+  — today/current-month/all-time KM totals, for dashboard/detail screens that
+  don't want to walk full paginated history.
+- **Added:** Scheduler jobs `check_service_due` (date- and km-based) and
+  `check_tyre_replacement_due` (90% of expected tyre life) — reminders are
+  now raised automatically for service-due and tyre-replacement, not just
+  insurance/mulkiya expiry.
+- **Fixed:** Seed data's expense categories now exactly match the required
+  set: **Fuel, Salik, Parking, Service, Repair, Driver Allowance,
+  Miscellaneous** (previously had different placeholder names).
+- **Verified live** against a real Postgres instance: migrations, seeding,
+  signup → login → `/me`, driver creation, vehicle CRUD, vehicle assignment,
+  KM entry + stats, expense creation + approval, receipt upload, dashboard,
+  vehicle/driver/expense-wise reports, and PDF/Excel export + download — all
+  exercised with real HTTP requests against a running server, not mocked.
 
 ## License
 

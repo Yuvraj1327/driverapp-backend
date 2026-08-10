@@ -39,3 +39,13 @@ class KmLogRead(BaseModel):
     notes: str | None = None
     created_at: datetime
     updated_at: datetime
+
+
+class KmStats(BaseModel):
+    """Aggregate KM stats — used by the Flutter dashboard/vehicle-detail screens
+    to show today/this-month/all-time distance covered without needing to
+    walk the full history."""
+
+    today_km: float
+    current_month_km: float
+    total_km: float

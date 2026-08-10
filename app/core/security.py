@@ -1,6 +1,7 @@
 """
 Password hashing and JWT token creation/verification utilities.
 """
+import hashlib
 from datetime import datetime, timedelta, timezone
 from typing import Any, Literal
 
@@ -49,3 +50,9 @@ def create_refresh_token(subject: str, role: str) -> str:
 def decode_token(token: str) -> dict[str, Any]:
     """Raises jose.JWTError on invalid/expired token."""
     return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+
+
+def hash_token(token: str) -> str:
+    """One-way hash of a JWT for storage in the revoked-token blacklist,
+    so raw tokens are never persisted at rest."""
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()

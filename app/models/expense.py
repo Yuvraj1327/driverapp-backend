@@ -28,7 +28,7 @@ class Expense(Base, UUIDMixin, TimestampMixin):
     description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     receipt_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     status: Mapped[ExpenseStatus] = mapped_column(
-        Enum(ExpenseStatus, name="expense_status"), default=ExpenseStatus.PENDING, nullable=False
+        Enum(ExpenseStatus, name="expense_status", values_callable=lambda x: [e.value for e in x]), default=ExpenseStatus.PENDING, nullable=False
     )
 
     vehicle: Mapped["Vehicle"] = relationship(back_populates="expenses")

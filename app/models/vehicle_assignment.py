@@ -23,7 +23,7 @@ class VehicleAssignment(Base, UUIDMixin, TimestampMixin):
     assigned_date: Mapped[date] = mapped_column(Date, nullable=False)
     unassigned_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     status: Mapped[AssignmentStatus] = mapped_column(
-        Enum(AssignmentStatus, name="assignment_status"), default=AssignmentStatus.ACTIVE, nullable=False
+        Enum(AssignmentStatus, name="assignment_status", values_callable=lambda x: [e.value for e in x]), default=AssignmentStatus.ACTIVE, nullable=False
     )
     notes: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 

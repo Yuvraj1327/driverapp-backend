@@ -21,13 +21,13 @@ class Reminder(Base, UUIDMixin, TimestampMixin):
     )
 
     reminder_type: Mapped[ReminderType] = mapped_column(
-        Enum(ReminderType, name="reminder_type"), nullable=False
+        Enum(ReminderType, name="reminder_type", values_callable=lambda x: [e.value for e in x]), nullable=False
     )
     title: Mapped[str] = mapped_column(String(150), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     due_date: Mapped[date] = mapped_column(Date, nullable=False)
     status: Mapped[ReminderStatus] = mapped_column(
-        Enum(ReminderStatus, name="reminder_status"), default=ReminderStatus.PENDING, nullable=False
+        Enum(ReminderStatus, name="reminder_status", values_callable=lambda x: [e.value for e in x]), default=ReminderStatus.PENDING, nullable=False
     )
 
     vehicle: Mapped[Optional["Vehicle"]] = relationship(back_populates="reminders")

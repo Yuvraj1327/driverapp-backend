@@ -17,9 +17,9 @@ class Report(Base, UUIDMixin, TimestampMixin):
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
 
-    report_type: Mapped[ReportType] = mapped_column(Enum(ReportType, name="report_type"), nullable=False)
+    report_type: Mapped[ReportType] = mapped_column(Enum(ReportType, name="report_type", values_callable=lambda x: [e.value for e in x]), nullable=False)
     export_format: Mapped[ExportFormat] = mapped_column(
-        Enum(ExportFormat, name="export_format"), nullable=False
+        Enum(ExportFormat, name="export_format", values_callable=lambda x: [e.value for e in x]), nullable=False
     )
     period_start: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     period_end: Mapped[Optional[date]] = mapped_column(Date, nullable=True)

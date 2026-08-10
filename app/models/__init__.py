@@ -17,6 +17,7 @@ from app.models.service import Service  # noqa: F401
 from app.models.reminder import Reminder  # noqa: F401
 from app.models.notification import Notification  # noqa: F401
 from app.models.report import Report  # noqa: F401
+from app.models.revoked_token import RevokedToken  # noqa: F401
 
 __all__ = [
     "Base",
@@ -34,4 +35,5 @@ __all__ = [
     "Reminder",
     "Notification",
     "Report",
+    "RevokedToken",
 ]

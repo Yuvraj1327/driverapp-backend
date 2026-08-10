@@ -20,7 +20,7 @@ class ExpenseApproval(Base, UUIDMixin, TimestampMixin):
     )
 
     decision: Mapped[ExpenseStatus] = mapped_column(
-        Enum(ExpenseStatus, name="approval_decision"), nullable=False
+        Enum(ExpenseStatus, name="approval_decision", values_callable=lambda x: [e.value for e in x]), nullable=False
     )
     remarks: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 

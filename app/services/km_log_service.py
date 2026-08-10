@@ -3,6 +3,7 @@ KM log service: auto-calculates distance and updates vehicle odometer.
 """
 from __future__ import annotations
 import uuid
+from datetime import date
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,7 +11,7 @@ from app.models.km_log import KmLog
 from app.repositories.km_log_repository import KmLogRepository
 from app.repositories.vehicle_repository import VehicleRepository
 from app.schemas.common import Page
-from app.schemas.km_log import KmLogCreate, KmLogUpdate
+from app.schemas.km_log import KmLogCreate, KmLogUpdate, KmStats
 from app.services.exceptions import NotFoundError, ValidationError
 
 
@@ -80,3 +81,25 @@ class KmLogService:
     async def history_by_driver(self, driver_id: uuid.UUID, page: int, page_size: int) -> Page[KmLog]:
         items, total = await self.km_log_repo.list_by_driver(driver_id, page, page_size)
         return Page.create(items=items, total=total, page=page, page_size=page_size)
+
+    async def stats_for_vehicle(self, vehicle_id: uuid.UUID) -> KmStats:
+        vehicle = await self.vehicle_repo.get(vehicle_id)
+        if not vehicle:
+            raise NotFoundError("Vehicle", str(vehicle_id))
+        return await self._compute_stats(vehicle_id=vehicle_id)
+
+    async def stats_for_driver(self, driver_id: uuid.UUID) -> KmStats:
+        return await self._compute_stats(driver_id=driver_id)
+
+    async def _compute_stats(
+        self, vehicle_id: uuid.UUID | None = None, driver_id: uuid.UUID | None = None
+    ) -> KmStats:
+        today = date.today()
+        month_start = today.replace(day=1)
+        epoch = date(2000, 1, 1)
+
+        today_km = await self.km_log_repo.total_distance_between(today, today, vehicle_id, driver_id)
+        month_km = await self.km_log_repo.total_distance_between(month_start, today, vehicle_id, driver_id)
+        total_km = await self.km_log_repo.total_distance_between(epoch, today, vehicle_id, driver_id)
+
+        return KmStats(today_km=today_km, current_month_km=month_km, total_km=total_km)

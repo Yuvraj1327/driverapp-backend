@@ -111,3 +111,56 @@ async def test_km_log_rejects_start_below_vehicle_odometer(client: AsyncClient, 
         headers=auth_headers(admin_token),
     )
     assert log_resp.status_code == 422
+
+
+async def test_km_stats_endpoints(client: AsyncClient, admin_token: str):
+    vehicle_resp = await client.post(
+        "/api/v1/vehicles/",
+        json={
+            "registration_number": "DXB-K-300",
+            "make": "Toyota",
+            "model": "Hiace",
+            "year": 2022,
+            "current_odometer": 2000,
+        },
+        headers=auth_headers(admin_token),
+    )
+    vehicle_id = vehicle_resp.json()["id"]
+
+    driver_resp = await client.post(
+        "/api/v1/drivers/",
+        json={
+            "full_name": "Stats Driver",
+            "email": "statsdriver@test.com",
+            "password": "Driver@123",
+            "license_number": "LIC-STATS-1",
+        },
+        headers=auth_headers(admin_token),
+    )
+    driver_id = driver_resp.json()["id"]
+
+    await client.post(
+        "/api/v1/km-logs/",
+        json={
+            "vehicle_id": vehicle_id,
+            "driver_id": driver_id,
+            "start_odometer": 2000,
+            "end_odometer": 2150,
+        },
+        headers=auth_headers(admin_token),
+    )
+
+    vehicle_stats = await client.get(
+        f"/api/v1/km-logs/vehicle/{vehicle_id}/stats", headers=auth_headers(admin_token)
+    )
+    assert vehicle_stats.status_code == 200
+    stats_body = vehicle_stats.json()
+    assert stats_body["today_km"] == 150.0
+    assert stats_body["total_km"] == 150.0
+    assert stats_body["current_month_km"] == 150.0
+
+    driver_stats = await client.get(
+        f"/api/v1/km-logs/driver/{driver_id}/stats", headers=auth_headers(admin_token)
+    )
+    assert driver_stats.status_code == 200
+    assert driver_stats.json()["total_km"] == 150.0
