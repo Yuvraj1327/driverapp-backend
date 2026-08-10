@@ -17,6 +17,10 @@ router = APIRouter(prefix="/services", tags=["Service History"])
 
 
 @router.post(
+    "", include_in_schema=False, response_model=ServiceRead, status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_manager)],
+)
+@router.post(
     "/", response_model=ServiceRead, status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_manager)],
 )
@@ -26,6 +30,7 @@ async def create_service(payload: ServiceCreate, db: AsyncSession = Depends(get_
     return ServiceRead.model_validate(record)
 
 
+@router.get("", include_in_schema=False, response_model=Page[ServiceRead], dependencies=[Depends(require_any_role)])
 @router.get("/", response_model=Page[ServiceRead], dependencies=[Depends(require_any_role)])
 async def list_services(
     pagination: tuple[int, int] = Depends(pagination_params),

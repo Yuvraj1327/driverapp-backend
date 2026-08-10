@@ -21,6 +21,10 @@ router = APIRouter(prefix="/expense-categories", tags=["Expense Categories"])
 
 
 @router.post(
+    "", include_in_schema=False, response_model=ExpenseCategoryRead, status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_manager)],
+)
+@router.post(
     "/", response_model=ExpenseCategoryRead, status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_manager)],
 )
@@ -32,6 +36,7 @@ async def create_category(
     return ExpenseCategoryRead.model_validate(category)
 
 
+@router.get("", include_in_schema=False, response_model=Page[ExpenseCategoryRead], dependencies=[Depends(require_any_role)])
 @router.get("/", response_model=Page[ExpenseCategoryRead], dependencies=[Depends(require_any_role)])
 async def list_categories(
     pagination: tuple[int, int] = Depends(pagination_params), db: AsyncSession = Depends(get_db)

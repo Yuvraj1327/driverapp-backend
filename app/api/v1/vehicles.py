@@ -18,6 +18,10 @@ router = APIRouter(prefix="/vehicles", tags=["Vehicles"])
 
 
 @router.post(
+    "", include_in_schema=False, response_model=VehicleRead, status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_manager)],
+)
+@router.post(
     "/", response_model=VehicleRead, status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_manager)],
 )
@@ -27,6 +31,7 @@ async def create_vehicle(payload: VehicleCreate, db: AsyncSession = Depends(get_
     return VehicleRead.model_validate(vehicle)
 
 
+@router.get("", include_in_schema=False, response_model=Page[VehicleRead], dependencies=[Depends(require_any_role)])
 @router.get("/", response_model=Page[VehicleRead], dependencies=[Depends(require_any_role)])
 async def list_vehicles(
     pagination: tuple[int, int] = Depends(pagination_params),

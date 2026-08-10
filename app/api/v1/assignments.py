@@ -17,6 +17,10 @@ router = APIRouter(prefix="/assignments", tags=["Vehicle Assignments"])
 
 
 @router.post(
+    "", include_in_schema=False, response_model=AssignmentRead, status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_manager)],
+)
+@router.post(
     "/", response_model=AssignmentRead, status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_manager)],
 )
@@ -35,6 +39,7 @@ async def unassign_driver(assignment_id: uuid.UUID, db: AsyncSession = Depends(g
     return AssignmentRead.model_validate(assignment)
 
 
+@router.get("", include_in_schema=False, response_model=Page[AssignmentRead], dependencies=[Depends(require_any_role)])
 @router.get("/", response_model=Page[AssignmentRead], dependencies=[Depends(require_any_role)])
 async def list_assignments(
     pagination: tuple[int, int] = Depends(pagination_params),

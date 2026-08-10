@@ -34,6 +34,10 @@ def _to_schema(driver) -> DriverWithUser:
 
 
 @router.post(
+    "", include_in_schema=False, response_model=DriverWithUser, status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_manager)],
+)
+@router.post(
     "/", response_model=DriverWithUser, status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_manager)],
 )
@@ -43,6 +47,7 @@ async def create_driver(payload: DriverCreate, db: AsyncSession = Depends(get_db
     return _to_schema(driver)
 
 
+@router.get("", include_in_schema=False, response_model=Page[DriverWithUser], dependencies=[Depends(require_any_role)])
 @router.get("/", response_model=Page[DriverWithUser], dependencies=[Depends(require_any_role)])
 async def list_drivers(
     pagination: tuple[int, int] = Depends(pagination_params), db: AsyncSession = Depends(get_db)

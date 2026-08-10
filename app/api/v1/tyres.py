@@ -17,6 +17,9 @@ router = APIRouter(prefix="/tyres", tags=["Tyres"])
 
 
 @router.post(
+    "", include_in_schema=False, response_model=TyreRead, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_manager)]
+)
+@router.post(
     "/", response_model=TyreRead, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_manager)]
 )
 async def create_tyre(payload: TyreCreate, db: AsyncSession = Depends(get_db)) -> TyreRead:
@@ -25,6 +28,7 @@ async def create_tyre(payload: TyreCreate, db: AsyncSession = Depends(get_db)) -
     return TyreRead.model_validate(tyre)
 
 
+@router.get("", include_in_schema=False, response_model=Page[TyreRead], dependencies=[Depends(require_any_role)])
 @router.get("/", response_model=Page[TyreRead], dependencies=[Depends(require_any_role)])
 async def list_tyres(
     pagination: tuple[int, int] = Depends(pagination_params),

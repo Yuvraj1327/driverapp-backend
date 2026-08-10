@@ -17,6 +17,10 @@ router = APIRouter(prefix="/km-logs", tags=["KM Logs"])
 
 
 @router.post(
+    "", include_in_schema=False, response_model=KmLogRead, status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_any_role)],
+)
+@router.post(
     "/", response_model=KmLogRead, status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_any_role)],
 )

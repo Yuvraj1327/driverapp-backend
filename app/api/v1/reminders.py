@@ -18,6 +18,10 @@ router = APIRouter(prefix="/reminders", tags=["Reminders"])
 
 
 @router.post(
+    "", include_in_schema=False, response_model=ReminderRead, status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_manager)],
+)
+@router.post(
     "/", response_model=ReminderRead, status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_manager)],
 )
@@ -27,6 +31,7 @@ async def create_reminder(payload: ReminderCreate, db: AsyncSession = Depends(ge
     return ReminderRead.model_validate(reminder)
 
 
+@router.get("", include_in_schema=False, response_model=Page[ReminderRead], dependencies=[Depends(require_any_role)])
 @router.get("/", response_model=Page[ReminderRead], dependencies=[Depends(require_any_role)])
 async def list_reminders(
     pagination: tuple[int, int] = Depends(pagination_params),

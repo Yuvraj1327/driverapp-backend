@@ -17,6 +17,7 @@ from app.services.user_service import UserService
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
+@router.post("", include_in_schema=False, response_model=UserRead, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_admin)])
 @router.post("/", response_model=UserRead, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_admin)])
 async def create_user(payload: UserCreate, db: AsyncSession = Depends(get_db)) -> UserRead:
     service = UserService(db)
@@ -24,6 +25,7 @@ async def create_user(payload: UserCreate, db: AsyncSession = Depends(get_db)) -
     return UserRead.model_validate(user)
 
 
+@router.get("", include_in_schema=False, response_model=Page[UserRead], dependencies=[Depends(require_admin)])
 @router.get("/", response_model=Page[UserRead], dependencies=[Depends(require_admin)])
 async def list_users(
     pagination: tuple[int, int] = Depends(pagination_params), db: AsyncSession = Depends(get_db)

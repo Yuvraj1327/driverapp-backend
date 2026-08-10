@@ -20,6 +20,10 @@ router = APIRouter(prefix="/expenses", tags=["Expenses"])
 
 
 @router.post(
+    "", include_in_schema=False, response_model=ExpenseRead, status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_any_role)],
+)
+@router.post(
     "/", response_model=ExpenseRead, status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_any_role)],
 )
@@ -29,6 +33,7 @@ async def create_expense(payload: ExpenseCreate, db: AsyncSession = Depends(get_
     return ExpenseRead.model_validate(expense)
 
 
+@router.get("", include_in_schema=False, response_model=Page[ExpenseRead], dependencies=[Depends(require_any_role)])
 @router.get("/", response_model=Page[ExpenseRead], dependencies=[Depends(require_any_role)])
 async def list_expenses(
     pagination: tuple[int, int] = Depends(pagination_params),
