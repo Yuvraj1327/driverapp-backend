@@ -44,6 +44,15 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+    # `flutter run -d chrome` (and `flutter run -d web-server`) serve the app
+    # on a dynamically-assigned localhost port, so a fixed origin allowlist
+    # blocks local development entirely (verified: Starlette's CORSMiddleware
+    # returns 400 "Disallowed CORS origin" with no CORS headers for any
+    # origin not in `allow_origins`, and a browser refuses to read the
+    # response — this is *not* the same failure mode as a 401/404, it never
+    # reaches our routes at all). Accept any localhost/127.0.0.1 port in
+    # addition to the explicit production allowlist above.
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

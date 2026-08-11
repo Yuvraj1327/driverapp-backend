@@ -3,6 +3,7 @@ Global exception handlers translating domain/service errors and unexpected
 exceptions into consistent JSON error responses.
 """
 from fastapi import FastAPI, Request, status
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
@@ -50,9 +51,14 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(RequestValidationError)
     async def request_validation_handler(request: Request, exc: RequestValidationError):
+        # Match FastAPI's own default shape (`{"detail": [{"loc":..., "msg":...}]}`)
+        # rather than a custom envelope: client-side error parsers (including
+        # the Flutter app's field-error extractor) are written against this
+        # standard shape, and diverging from it silently drops validation
+        # detail down to a generic "check the form" message.
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content={"detail": "Validation error", "errors": exc.errors()},
+            content={"detail": jsonable_encoder(exc.errors())},
         )
 
     @app.exception_handler(Exception)
